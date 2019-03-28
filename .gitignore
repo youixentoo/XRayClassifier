@@ -5,6 +5,13 @@ __pycache__/
 # Just to be sure
 *.ini
 
+# No zips
+.zip
+*.zip
+
+# Data
+version 1 data/
+
 # Exclude all images
 # Created by https://www.gitignore.io/api/images
 # Edit at https://www.gitignore.io/?templates=images

@@ -67,7 +67,7 @@ def main():
 
     # Getting the first image from the dataset
     item = xrayDataset.__getitem__(0)
-    lab = labelDictClassify.get(item["label"].item())
+    lab = item["image"]
     print(lab)
 
 
