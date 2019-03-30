@@ -73,10 +73,16 @@ def main():
 #    print(lab)
 
     device = DU.getDevice()
+    
+    # Gets the ranges of training and test data
+    training, testing = DU.splitTrainTest(xrayDataset, config)
+    
+    print(training)
+    print(testing)
 
-    criterion, optimizer, model = NM.modelInit(device)
+    #criterion, optimizer, model = NM.modelInit(device)
 
-    NM.trainNetwork(device, xrayDataset, config, model, criterion, optimizer)
+    NM.trainNetwork(device, xrayDataset, config, None, None, None)
 
 
 

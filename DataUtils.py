@@ -31,6 +31,20 @@ def getDevice(cudaAllowed=False):
     print("Running on: %s" % device)
     return device
 
+# Returns index ranges
+def splitTrainTest(dataset, config):
+    trainSplit = config.getTrainsplit()
+    datasetSize = dataset.__len__()
+    
+    training = round(datasetSize * (trainSplit / 100))
+    testing = training + 1 
+    
+    trainingRange = range(training)
+    testingRange = range(testing,datasetSize)
+    
+    return trainingRange, testingRange
+    
+    
 
 
 

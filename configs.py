@@ -25,9 +25,6 @@ class config():
      
     def getValidationSplit(self):
         return self._validationSplit
-    
-    def getNoneDataAmount(self):
-        return self._noneDataAmount
      
     def getEpochs(self):
         return self._epochs

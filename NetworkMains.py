@@ -59,6 +59,8 @@ def trainNetwork(device, dataset, config, model, criterion, optimizer):
     valSplit = config.getValidationSplit()
 
     datasetSize = dataset.__len__()
+    
+    print(datasetSize)
 
 
     """
