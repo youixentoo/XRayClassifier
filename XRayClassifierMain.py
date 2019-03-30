@@ -14,8 +14,6 @@ Created on Mon Mar 11 15:53:07 2019
             - Voornamelijk die van Sigma als richtlijn
         - Confusion Matrix is in principe hetzelfde als wat ik eigenlijk printte bij Sigma
 
-
-
     ##############################################
 
 
@@ -43,9 +41,13 @@ import os
 import DataUtils as DU
 import DatasetCreation as DC
 import NetworkMains as NM
+import configs
 
 
 def main():
+    # Configs
+    config = configs.config()
+
     # Reading the selected data
     DataCSVFrame = pd.read_csv("DataFrame.csv", usecols=["Image_Index","Finding_Labels"], index_col=False)
     labelsSet = set(DataCSVFrame["Finding_Labels"].values)
@@ -65,10 +67,16 @@ def main():
     # Creating the dataset
     xrayDataset = DC.XRayDataset(DataCSVFrame, imgPath, labelsDict)
 
-    # Getting the first image from the dataset
-    item = xrayDataset.__getitem__(0)
-    lab = item["image"]
-    print(lab)
+#    # Getting the first image from the dataset
+#    item = xrayDataset.__getitem__(0)
+#    lab = item["image"]
+#    print(lab)
+
+    device = DU.getDevice()
+
+    criterion, optimizer, model = NM.modelInit(device)
+
+    NM.trainNetwork(device, xrayDataset, config, model, criterion, optimizer)
 
 
 

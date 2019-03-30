@@ -40,11 +40,30 @@ from skimage import io, transform
 #        x = self.fc3(x)
 #        return x
 
+# Work in progress
+def modelInit(device):
+    model = models.alexnet(pretrained=False)
 
-def trainNetwork(model, criterion, optimizer, scheduler, num_epochs, device, dataloaders):
+    criterion = nn.CrossEntropyLoss() #nn.NLLLoss()
+    optimizer = optim.Adam(model.fc.parameters(), lr=0.003)
+    model.to(device)
+    return criterion, optimizer, model
+
+
+
+
+def trainNetwork(device, dataset, config, model, criterion, optimizer):
     since = time.time()
-    
-    dataset_sizes = {"train": len(dataloaders["train"]), "val": len(dataloaders["val"])}
+
+    num_epochs = config.getEpochs()
+    valSplit = config.getValidationSplit()
+
+    datasetSize = dataset.__len__()
+
+
+    """
+    #dataset_sizes = {"train": len(dataloaders["train"]), "val": len(dataloaders["val"])}
+
 
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
@@ -52,6 +71,8 @@ def trainNetwork(model, criterion, optimizer, scheduler, num_epochs, device, dat
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
+
+
 
         # Each epoch has a training and validation phase
         for phase in ['train', 'val']:
@@ -64,11 +85,11 @@ def trainNetwork(model, criterion, optimizer, scheduler, num_epochs, device, dat
             running_loss = 0.0
             running_corrects = 0
 
-            # Iterate over data. 
+            # Iterate over data.
             for inputs, labels in dataloaders[phase]:
                 inputs = inputs.to(device)
                 labels = labels.to(device)
-                
+
                 inputs = inputs.float()
                 labels = labels.float()
 
@@ -111,13 +132,14 @@ def trainNetwork(model, criterion, optimizer, scheduler, num_epochs, device, dat
 
     # load best model weights
     model.load_state_dict(best_model_wts)
-    
+
     return model
+    """
 
 
 
 def testNetwork(testData, model, device, lowX, highX):
-    
+
     correct = 0
     total = 0
     wrongLabels = []
@@ -127,13 +149,13 @@ def testNetwork(testData, model, device, lowX, highX):
             dataTensor, labels = dataTensor.to(device), labels.to(device)
             labels.float()
             output = model(dataTensor.float())
-            
+
             #print("Label: ",str(labels.item()),"\nPredict: ",str(output.item()))
-            
+
 #            if output.item() > lowX and output.item() < highX:
 #                with torch.no_grad():
 #                    output = updatedValue
-            
+
             _, predicted = torch.max(output, 0)
             #print(str(labels.item()), "::", str(output.item()))
             total += 1 #labels.size(0)
@@ -141,8 +163,8 @@ def testNetwork(testData, model, device, lowX, highX):
             correct += (predicted == labels).sum().item()
             if not predicted == labels:
                 wrongLabels.append(labels)
-    
-    
+
+
     print('Accuracy of the network on the test data: %1.4f %%' % (
         100 * correct / total))
     return wrongLabels
