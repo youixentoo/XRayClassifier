@@ -40,39 +40,41 @@ from skimage import io, transform
 #        x = self.fc3(x)
 #        return x
 
-# Work in progress
+# Getting the model and other needed stuff
 def modelInit(device):
     model = models.alexnet(pretrained=False)
 
     criterion = nn.CrossEntropyLoss() #nn.NLLLoss()
-    optimizer = optim.Adam(model.fc.parameters(), lr=0.003)
+    optimizer = optim.Adam(model.parameters(), lr=0.003)
     model.to(device)
     return criterion, optimizer, model
 
 
 
 
-def trainNetwork(device, dataset, config, model, criterion, optimizer):
+def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, optimizer):
     since = time.time()
 
     num_epochs = config.getEpochs()
-    valSplit = config.getValidationSplit()
 
     datasetSize = dataset.__len__()
     
     print(datasetSize)
 
 
-    """
-    #dataset_sizes = {"train": len(dataloaders["train"]), "val": len(dataloaders["val"])}
-
-
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
+    index = 0
 
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
+        
+        dataSets = {"train":trainSets[index], "val":valSets[index]}
+        if index % 20 == 19:
+            index = 0
+        else:
+            index += 1
 
 
 
@@ -88,12 +90,18 @@ def trainNetwork(device, dataset, config, model, criterion, optimizer):
             running_corrects = 0
 
             # Iterate over data.
-            for inputs, labels in dataloaders[phase]:
+            for datasetIndex in dataSets[phase]:
+                item = dataset.__getitem__(datasetIndex)
+                inputs = item["image"]
+                labels = item["label"]
+                
                 inputs = inputs.to(device)
                 labels = labels.to(device)
 
                 inputs = inputs.float()
                 labels = labels.float()
+                
+                inputs = inputs.unsqueeze(0)
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -102,8 +110,8 @@ def trainNetwork(device, dataset, config, model, criterion, optimizer):
                 # track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = (model(inputs)).float()
-                    _, preds = torch.max(outputs, 0)
-                    loss = criterion(outputs, labels)
+                    _, preds = torch.max(outputs, 1)
+                    loss = criterion(outputs, labels.long())
 
                     # backward + optimize only if in training phase
                     if phase == 'train':
@@ -114,8 +122,8 @@ def trainNetwork(device, dataset, config, model, criterion, optimizer):
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == (labels.long()).data)
 
-            epoch_loss = running_loss / dataset_sizes[phase]
-            epoch_acc = running_corrects.double() / dataset_sizes[phase]
+            epoch_loss = running_loss / len(dataSets[phase])
+            epoch_acc = running_corrects.double() / len(dataSets[phase])
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(
                 phase, epoch_loss, epoch_acc))
@@ -136,7 +144,7 @@ def trainNetwork(device, dataset, config, model, criterion, optimizer):
     model.load_state_dict(best_model_wts)
 
     return model
-    """
+   
 
 
 

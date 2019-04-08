@@ -14,7 +14,8 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset
 from torchvision import transforms, utils, datasets, models
-from skimage import io, color
+
+from PIL import Image
 
 #def createDataset(testTrainSplit, trainValidationSplit, classes, sourceDirectory, targetDirectory):
     #_createDatasetDirs(classes, targetDirectory)
@@ -36,20 +37,16 @@ class XRayDataset(Dataset):
 
     def __getitem__(self, index):
         imgName = os.path.join(self.imagesPath, self.xrayClassFrame.iloc[index, 0])
-        imageG = io.imread(imgName)
-
-        # Convert the gray-scaled image to RGB (3 layers)
-        image = color.gray2rgb(imageG)
-
-        xrayClass = self.xrayClassFrame.iloc[index, 1]
-        #xrayClass = xrayClass.astype('float')#.reshape(-1,2)
-
-
+        
+        image = np.array(Image.open(imgName).resize((224, 224)).convert("RGB"))
+        
         # swap color axis because
         # numpy image: H x W x C
         # torch image: C X H X W
-        image = image.transpose((2, 0, 1))
 
+        image = image.transpose((2, 0, 1))
+        xrayClass = self.xrayClassFrame.iloc[index, 1]
+        
         imgT = torch.from_numpy(image)
 
         label = self.labelsDict.get(xrayClass)

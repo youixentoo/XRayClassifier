@@ -35,6 +35,8 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, utils, datasets, models
 from skimage import io, transform
 
+from sklearn.model_selection import KFold, RepeatedKFold
+
 import time
 import os
 
@@ -67,25 +69,49 @@ def main():
     # Creating the dataset
     xrayDataset = DC.XRayDataset(DataCSVFrame, imgPath, labelsDict)
 
+
 #    # Getting the first image from the dataset
 #    item = xrayDataset.__getitem__(0)
 #    lab = item["image"]
 #    print(lab)
+#    print(lab.size())
+
+
 
     device = DU.getDevice()
-    
+
     # Gets the ranges of training and test data
     training, testing = DU.splitTrainTest(xrayDataset, config)
-    
-    print(training)
-    print(testing)
 
-    #criterion, optimizer, model = NM.modelInit(device)
+    trainSets, valSets = DU.trainValSets(training, config)
 
-    NM.trainNetwork(device, xrayDataset, config, None, None, None)
-
+    criterion, optimizer, model = NM.modelInit(device)
+## def trainNetwork(device, dataset, config, model, criterion, optimizer):
+    NM.trainNetwork(device, xrayDataset, trainSets, valSets, config, model, criterion, optimizer)
 
 
+def validationTrest():
+    config = configs.config()
+    testRgane = [*range(200)]
+
+    trainSets, valSets = DU.trainValSets(testRgane, config)
+
+    epochs = 21
+
+    index = 0
+    for epoc in range(epochs):
+        print(trainSets[index])
+        print(valSets[index])
+        if index % 20 == 19:
+            index = 0
+        else:
+            index += 1
+
+
+
+def modelTests():
+    device = DU.getDevice()
+    criterion, optimizer, model = NM.modelInit(device)
 
 
 
@@ -98,4 +124,6 @@ def main():
 
 
 if __name__ == "__main__":
+#    validationTrest()
     main()
+#    modelTests()

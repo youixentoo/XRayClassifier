@@ -15,7 +15,7 @@ class config():
         # How much of the training data is validation (%)
         self._validationSplit = 5
         # Number of epochs
-        self._epochs = 5
+        self._epochs = 1
         # Model name
         self._modelName = "XRAY_1"
    
