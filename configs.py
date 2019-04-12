@@ -16,6 +16,8 @@ class config():
         self._validationSplit = 5
         # Number of epochs
         self._epochs = 1
+        # Batch size
+        self._batches = 4
         # Model name
         self._modelName = "XRAY_1"
    
@@ -28,6 +30,9 @@ class config():
      
     def getEpochs(self):
         return self._epochs
+    
+    def getBatchSize(self):
+        return self._batches
  
     def getModelName(self, useBestModel=True):
         if useBestModel:

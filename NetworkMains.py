@@ -14,6 +14,7 @@ import time
 import copy
 
 from torch.utils import data
+from torch.utils.data import BatchSampler, SequentialSampler
 from torch.optim import lr_scheduler
 from torch.utils.data import Dataset, DataLoader
 from torchvision import utils, datasets, models
@@ -47,12 +48,16 @@ def modelInit(device):
     criterion = nn.CrossEntropyLoss() #nn.NLLLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.003)
     model.to(device)
+    if device == 'cuda':
+        model = torch.nn.DataParallel(model)
+        cudnn.benchmark = True
+        
     return criterion, optimizer, model
 
 
 
 
-def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, optimizer):
+def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, optimizer, batchsize):
     since = time.time()
 
     num_epochs = config.getEpochs()
@@ -76,9 +81,10 @@ def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, 
         else:
             index += 1
 
+#        test = BatchSampler(SequentialSampler(dataSets["train"]), batch_size=batchsize, drop_last=False)
+#        print(list(test))
 
-
-        # Each epoch has a training and validation phase
+        #Each epoch has a training and validation phase
         for phase in ['train', 'val']:
             if phase == 'train':
                 #scheduler.step()
@@ -89,19 +95,21 @@ def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, 
             running_loss = 0.0
             running_corrects = 0
 
+            # Create the dataset batches
+            dataSet = list(BatchSampler(SequentialSampler(dataSets[phase]), batch_size=batchsize, drop_last=False))
+
             # Iterate over data.
-            for datasetIndex in dataSets[phase]:
-                item = dataset.__getitem__(datasetIndex)
-                inputs = item["image"]
-                labels = item["label"]
+            for i, datasetIndexes in enumerate(dataSet):
+                print("From phase: "+phase+", doing indexes: "+str(datasetIndexes), end="\r")
+                images, labels = dataset.__getitem__(datasetIndexes)
                 
-                inputs = inputs.to(device)
+                images = images.to(device)
                 labels = labels.to(device)
 
-                inputs = inputs.float()
+                images = images.float()
                 labels = labels.float()
                 
-                inputs = inputs.unsqueeze(0)
+                images = images.unsqueeze(0)
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -109,7 +117,7 @@ def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, 
                 # forward
                 # track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
-                    outputs = (model(inputs)).float()
+                    outputs = (model(images)).float()
                     _, preds = torch.max(outputs, 1)
                     loss = criterion(outputs, labels.long())
 
@@ -119,7 +127,7 @@ def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, 
                         optimizer.step()
 
                 # statistics
-                running_loss += loss.item() * inputs.size(0)
+                running_loss += loss.item() * images.size(0)
                 running_corrects += torch.sum(preds == (labels.long()).data)
 
             epoch_loss = running_loss / len(dataSets[phase])
@@ -148,33 +156,49 @@ def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, 
 
 
 
-def testNetwork(testData, model, device, lowX, highX):
-
+# Testing of the model using test data
+# Returns a list of the wrongly guessed labels
+def testing(testData, model, device):
+    
+    # Variables needed in the function
     correct = 0
     total = 0
     wrongLabels = []
-
+    
+    # Runs the model without gradient calculations as that is not needed for testing.
+    # It also saves on memory.
     with torch.no_grad():
+        # Looping over the data stored in testData to be tested on the model.
         for dataTensor, labels in testData:
+            # Predicting the label (labels) based on the sequence (dataTensor),
             dataTensor, labels = dataTensor.to(device), labels.to(device)
             labels.float()
             output = model(dataTensor.float())
-
-            #print("Label: ",str(labels.item()),"\nPredict: ",str(output.item()))
-
-#            if output.item() > lowX and output.item() < highX:
-#                with torch.no_grad():
-#                    output = updatedValue
-
+            
+            # Predict probability and prediction
+            #predictionProb = (sum(output.detach().numpy()) / len(output.detach().numpy()))
+            #predictionProb = sum(output.detach().numpy())
+#            predictionProb = (output.cpu()).detach().numpy().max()
+#            predicted = np.where(predictionProb>0.5,1,0)
+#            predictedTens = torch.from_numpy(predicted).long().to(device)
             _, predicted = torch.max(output, 0)
-            #print(str(labels.item()), "::", str(output.item()))
-            total += 1 #labels.size(0)
+            
+           # print(prediction_prob)
+
             labels = labels.long()
+            
+            # Counts the number of correct guesses
             correct += (predicted == labels).sum().item()
+
+            
             if not predicted == labels:
-                wrongLabels.append(labels)
+                wrongLabels.append([labels,predicted])
+                
+            total += 1 
+            
 
-
+    
+    
     print('Accuracy of the network on the test data: %1.4f %%' % (
         100 * correct / total))
     return wrongLabels

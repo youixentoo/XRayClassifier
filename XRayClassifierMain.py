@@ -53,6 +53,8 @@ def main():
     # Reading the selected data
     DataCSVFrame = pd.read_csv("DataFrame.csv", usecols=["Image_Index","Finding_Labels"], index_col=False)
     labelsSet = set(DataCSVFrame["Finding_Labels"].values)
+#    labelsFreq = np.unique(list(DataCSVFrame["Finding_Labels"].values), return_counts=True)
+#    print(labelsFreq)
 
     # Dictionary with the label as key and the index in the set as value
     labelsDict = {}
@@ -71,10 +73,9 @@ def main():
 
 
 #    # Getting the first image from the dataset
-#    item = xrayDataset.__getitem__(0)
-#    lab = item["image"]
-#    print(lab)
-#    print(lab.size())
+#    imgs, labs = xrayDataset.__getitem__([1])
+#    print(len(imgs))
+#    print(imgs)
 
 
 
@@ -86,8 +87,14 @@ def main():
     trainSets, valSets = DU.trainValSets(training, config)
 
     criterion, optimizer, model = NM.modelInit(device)
+    
+    batchsize = config.getBatchSize()
+    
+    
 ## def trainNetwork(device, dataset, config, model, criterion, optimizer):
-    NM.trainNetwork(device, xrayDataset, trainSets, valSets, config, model, criterion, optimizer)
+    NM.trainNetwork(device, xrayDataset, trainSets, valSets, config, model, criterion, optimizer, batchsize)
+    
+    
 
 
 def validationTrest():

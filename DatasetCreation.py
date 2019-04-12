@@ -35,28 +35,36 @@ class XRayDataset(Dataset):
     def __len__(self):
         return len(self.xrayClassFrame)
 
-    def __getitem__(self, index):
-        imgName = os.path.join(self.imagesPath, self.xrayClassFrame.iloc[index, 0])
+    def __getitem__(self, indexes):
+        imagesL = []
+        labelsL = []
         
-        image = np.array(Image.open(imgName).resize((224, 224)).convert("RGB"))
+        for index in indexes:
+            imgName = os.path.join(self.imagesPath, self.xrayClassFrame.iloc[index, 0])
+            
+            image = np.array(Image.open(imgName).resize((224, 224)).convert("RGB"))
+            
+            # swap color axis because
+            # numpy image: H x W x C
+            # torch image: C X H X W
+    
+            image = image.transpose((2, 0, 1))
+            xrayClass = self.xrayClassFrame.iloc[index, 1]
+            
+            #imgT = torch.from_numpy(image)
+    
+            label = self.labelsDict.get(xrayClass)
+            #labelTensor = torch.from_numpy(np.asarray([label]))
+            
+            imagesL.append(image)
+            labelsL.append(label)
+            
+
         
-        # swap color axis because
-        # numpy image: H x W x C
-        # torch image: C X H X W
-
-        image = image.transpose((2, 0, 1))
-        xrayClass = self.xrayClassFrame.iloc[index, 1]
-        
-        imgT = torch.from_numpy(image)
-
-        label = self.labelsDict.get(xrayClass)
-        labelTensor = torch.from_numpy(np.asarray([label]))
-
-
-        sample = {'image':imgT,  'label':labelTensor}
-
-
-        return sample
+        imgs = torch.from_numpy(np.asarray(imagesL))
+        labs = torch.from_numpy(np.asarray(labelsL))
+            
+        return imgs, labs
 
 
 
