@@ -119,7 +119,8 @@ def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, 
                 # track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = (model(images)).float()
-                    _, preds = torch.max(outputs, 1)
+                    preds = round(sum(abs(outputs.detach().numpy()[0])) / len(outputs.detach().numpy()[0]))
+                    #_, preds = torch.max(outputs, 1)
                     loss = criterion(outputs, labels.long())
 
                     # backward + optimize only if in training phase
@@ -183,12 +184,18 @@ def testing(dataset, testingIndexes, model, device, labelDictClassify):
             
             
             # Predict probability and prediction
-            #predictionProb = (sum(output.detach().numpy()) / len(output.detach().numpy()))
+            predicted = round(sum(abs(output.detach().numpy()[0])) / len(output.detach().numpy()[0]))
+            print(predicted)
             #predictionProb = sum(output.detach().numpy())
 #            predictionProb = (output.cpu()).detach().numpy().max()
 #            predicted = np.where(predictionProb>0.5,1,0)
 #            predictedTens = torch.from_numpy(predicted).long().to(device)
-            _, predicted = torch.max(output,1)
+            #_, predicted = torch.max(output,1)
+            #print(predicted,"\n",predictionProb, "\n",label,"\n----")
+#            if predict < 1:
+#                predicted = 1
+            if index > 8330:
+                break
             
             #print(predicted)
             #break

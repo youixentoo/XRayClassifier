@@ -47,7 +47,7 @@ class XRayDataset(Dataset):
             image = np.array(Image.open(imgName).resize((224, 224)).convert("RGB"))
             #print(image)
             # Make the numbers a bit smaller
-            image = np.divide(image, 10)
+            #image = np.divide(image, 10)
             #print(image)
             
             # swap color axis because

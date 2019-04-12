@@ -62,7 +62,7 @@ def main():
     
     #print(xrayDataset.xrayClassFrame)
     
-    device = DU.getDevice(True)
+    device = DU.getDevice()
 
     # Gets the ranges of training and test data
     training, testing = DU.splitTrainTest(xrayDataset, config)

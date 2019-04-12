@@ -18,7 +18,7 @@ class config():
         # How much of the training data is validation (%)
         self._validationSplit = 5
         # Number of epochs
-        self._epochs = 2
+        self._epochs = 5
         # Batch size
         self._batches = 50
         # Model name
