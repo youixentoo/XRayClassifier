@@ -41,8 +41,6 @@ def main():
     # Reading the selected data
     DataCSVFrame = pd.read_csv("DataFrame.csv", usecols=["Image_Index","Finding_Labels"], index_col=False)
     labelsSet = set(DataCSVFrame["Finding_Labels"].values)
-#    labelsFreq = np.unique(list(DataCSVFrame["Finding_Labels"].values), return_counts=True)
-#    print(labelsFreq)
 
     # Dictionary with the label as key and the index in the set as value
     labelsDict = {}
@@ -66,60 +64,30 @@ def main():
 #    print(imgs)
 
 
-
+    # Get the device (cpu/gpu) to run the model on
     device = DU.getDevice()
 
     # Gets the ranges of training and test data
     training, testing = DU.splitTrainTest(xrayDataset, config)
 
+    # Get the train and validation sets
     trainSets, valSets = DU.trainValSets(training, config)
 
+    # Initialize the criterion, optimizer and model
     criterion, optimizer, model = NM.modelInit(device)
     
+    # Get the batchsize
     batchsize = config.getBatchSize()
     
     
-## def trainNetwork(device, dataset, config, model, criterion, optimizer):
+    # Train the model
     trainedModel = NM.trainNetwork(device, xrayDataset, trainSets, valSets, config, model, criterion, optimizer, batchsize)
     
+    # Save the model to be used for testing
     NM.save_model(trainedModel, config.getModelName())
     
 
 
-def validationTrest():
-    config = configs.config()
-    testRgane = [*range(200)]
-
-    trainSets, valSets = DU.trainValSets(testRgane, config)
-
-    epochs = 21
-
-    index = 0
-    for epoc in range(epochs):
-        print(trainSets[index])
-        print(valSets[index])
-        if index % 20 == 19:
-            index = 0
-        else:
-            index += 1
-
-
-
-def modelTests():
-    device = DU.getDevice()
-    criterion, optimizer, model = NM.modelInit(device)
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == "__main__":
-#    validationTrest()
     main()
-#    modelTests()
+

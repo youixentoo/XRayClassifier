@@ -24,7 +24,8 @@ from sklearn.model_selection import KFold
 import time
 import os
 
-
+# Returns the device to run the model on
+# CUDA is off by default
 def getDevice(cudaAllowed=False):
     if cudaAllowed:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -34,7 +35,8 @@ def getDevice(cudaAllowed=False):
     print("Running on: %s" % device)
     return device
 
-# Returns index ranges
+
+# Returns index ranges based on config settings
 def splitTrainTest(dataset, config):
     trainSplit = config.getTrainsplit()
     datasetSize = dataset.__len__()
@@ -46,6 +48,7 @@ def splitTrainTest(dataset, config):
     testingRange = range(testing,datasetSize)
 
     return trainingRange, testingRange
+
 
 # Splits the training data into training and validation data via
 # SKLearn KFold, returns a list of indexes.    
@@ -62,24 +65,3 @@ def trainValSets(trainingRange, config):
         valSets.append(ts)
 
     return trainSets, valSets
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-###

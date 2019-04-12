@@ -30,6 +30,7 @@ class XRayDataset(Dataset):
     """
 
     def __init__(self, datasetDF, imagesPath, labelsDict):
+        # Dataset values
         self.xrayClassFrame = datasetDF
         self.imagesPath = imagesPath
         self.labelsDict = labelsDict
@@ -38,35 +39,34 @@ class XRayDataset(Dataset):
         return len(self.xrayClassFrame)
 
     def __getitem__(self, indexes):
+        # Lists to put the data in
         imagesL = []
         labelsL = []
         
         for index in indexes:
+            # Get the image name from the index
             imgName = os.path.join(self.imagesPath, self.xrayClassFrame.iloc[index, 0])
             
+            # Convert the image to an array and resize it
             image = np.array(Image.open(imgName).resize((224, 224)).convert("RGB"))
-            #print(image)
-            # Make the numbers a bit smaller
-            #image = np.divide(image, 10)
-            #print(image)
             
-            # swap color axis because
+            # Swap color axis because
             # numpy image: H x W x C
             # torch image: C X H X W
     
             image = image.transpose((2, 0, 1))
+            # The label name from the image
             xrayClass = self.xrayClassFrame.iloc[index, 1]
             
-            #imgT = torch.from_numpy(image)
-    
+            # Get the label int from the xrayClass
             label = self.labelsDict.get(xrayClass)
-            #labelTensor = torch.from_numpy(np.asarray([label]))
             
+            # Add the data to the lists
             imagesL.append(image)
             labelsL.append(label)
             
 
-        
+        # Convert the numpy array to a pytorch tensor
         imgs = torch.from_numpy(np.asarray(imagesL))
         labs = torch.from_numpy(np.asarray(labelsL))
             
@@ -91,61 +91,10 @@ def getDatasetFrame(imagesDir):
 
     return DatasetFrame
 
+
 # Saves the dataframe as a .csv file
 def saveDFToCSV(dataFrame, filePath):
     test = dataFrame.to_csv(filePath, index=False)
     return test
 
 
-
-
-
-
-"""
-
-def createDataset():
-    testCSV()
-
-
-
-def testCSV():
-    csv_frame = pd.read_csv("Data_Entry_2017.csv")
-    print(csv_frame.as_matrix())
-
-def _createDatasetDirs(classes, targetDir):
-    mainDirs = ["Training","Validation","Testing"]
-    for mains in mainDirs:
-        try:
-            os.mkdir(targetDir+os.sep+mains)
-        except Exception:
-            pass
-        for classification in classes:
-            try:
-                os.mkdir(targetDir+os.sep+mains+os.sep+classification)
-            except Exception:
-                pass
-
-
-
-
-
-
-def getTraining(dataset):
-    return torch.utils.data.DataLoader(dataset,
-                                       batch_size=4, shuffle=True,
-                                       num_workers=0)
-
-def getTesting(dataset):
-    return torch.utils.data.DataLoader(dataset,
-                                       batch_size=4, shuffle=False,
-                                       num_workers=0)
-
-def _createTrainValidationData(trainValidationSplit, classes, sourceDir, targetDir):
-    return None
-
-"""
-
-
-
-if __name__ == "__main__":
-    createDataset()

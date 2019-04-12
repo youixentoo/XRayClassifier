@@ -46,7 +46,8 @@ def modelInit(device):
     model = models.alexnet(pretrained=False, num_classes=4)
 
     criterion = nn.CrossEntropyLoss() #nn.NLLLoss()
-    optimizer = optim.Adam(model.parameters(), lr=0.003)
+#    optimizer = optim.Adam(model.parameters(), lr=0.003)
+    optimizer = optim.SGD(model.parameters(), lr=0.003, momentum=0.9)
     model.to(device)
     if device == 'cuda':
         model = torch.nn.DataParallel(model)
@@ -64,9 +65,7 @@ def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, 
 
     datasetSize = dataset.__len__()
     
-    print(datasetSize)
-
-
+    # To save the best model later on
     best_model_wts = copy.deepcopy(model.state_dict())
     best_acc = 0.0
     index = 0
@@ -75,14 +74,12 @@ def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, 
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
         print('-' * 10)
         
+        # Loops through the kfolds and resets the index after the last item in the kfold data
         dataSets = {"train":trainSets[index], "val":valSets[index]}
         if index % 20 == 19:
             index = 0
         else:
             index += 1
-
-#        test = BatchSampler(SequentialSampler(dataSets["train"]), batch_size=batchsize, drop_last=False)
-#        print(list(test))
 
         #Each epoch has a training and validation phase
         for phase in ['train', 'val']:
@@ -180,34 +177,15 @@ def testing(dataset, testingIndexes, model, device, labelDictClassify):
             label.float()
             output = model(image.float())
             
-            #print(output)
-            
-            
-            # Predict probability and prediction
+            # Prediction
             predicted = round(sum(abs(output.detach().numpy()[0])) / len(output.detach().numpy()[0]))
-            print(predicted)
-            #predictionProb = sum(output.detach().numpy())
-#            predictionProb = (output.cpu()).detach().numpy().max()
-#            predicted = np.where(predictionProb>0.5,1,0)
-#            predictedTens = torch.from_numpy(predicted).long().to(device)
-            #_, predicted = torch.max(output,1)
-            #print(predicted,"\n",predictionProb, "\n",label,"\n----")
-#            if predict < 1:
-#                predicted = 1
-            if index > 8330:
-                break
-            
-            #print(predicted)
-            #break
-            
-           # print(prediction_prob)
 
             label = label.long()
             
             # Counts the number of correct guesses
             correct += (predicted == label).sum().item()
 
-            
+            # Adds all wrongly guessed label to a list
             if not predicted == label:
                 wrongLabels.append([label.item(),predicted.item()])
                 
@@ -216,9 +194,6 @@ def testing(dataset, testingIndexes, model, device, labelDictClassify):
                 
             total += 1 
             
-
-    
-    
     print('Accuracy of the network on the test data: %1.4f %%' % (
         100 * correct / total))
     

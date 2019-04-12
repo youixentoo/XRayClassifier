@@ -41,9 +41,8 @@ def main():
     # Reading the selected data
     DataCSVFrame = pd.read_csv("DataFrame.csv", usecols=["Image_Index","Finding_Labels"], index_col=False)
     
+    # Get the labels
     labelsSet = set(DataCSVFrame["Finding_Labels"].values)
-#    labelsFreq = np.unique(list(DataCSVFrame["Finding_Labels"].values), return_counts=True)
-#    print(labelsFreq)
 
     # Dictionary with the label as key and the index in the set as value
     labelsDict = {}
@@ -62,6 +61,7 @@ def main():
     
     #print(xrayDataset.xrayClassFrame)
     
+    # Get the device (cpu/gpu) to run the model on
     device = DU.getDevice()
 
     # Gets the ranges of training and test data
@@ -87,9 +87,8 @@ def main():
     # Confusion Matrix
     CMPlot.plot_confusion_matrix(labelsCM, predsCM, list(labelsSet), normalize=False, title="Confusion Matrix")
     
+    # Show the matrix
     plt.show()
-    
-    print(labelsDict)
     
     
     
