@@ -16,7 +16,7 @@ version 1 data/
 # Created by https://www.gitignore.io/api/images
 # Edit at https://www.gitignore.io/?templates=images
 
-# No Model for now
+# No Model
 *.pth
 
 
