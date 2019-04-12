@@ -109,7 +109,7 @@ def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, 
                 images = images.float()
                 labels = labels.float()
                 
-                images = images.unsqueeze(0)
+                #images = images.unsqueeze(0)
 
                 # zero the parameter gradients
                 optimizer.zero_grad()
@@ -207,6 +207,9 @@ def testing(testData, model, device):
 
 
 
+# Saves the model as file to be used elsewhere
+def save_model(model, name):
+    torch.save(model.state_dict(), name+".pth") 
 
 
 

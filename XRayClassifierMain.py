@@ -73,7 +73,7 @@ def main():
 
 
 #    # Getting the first image from the dataset
-#    imgs, labs = xrayDataset.__getitem__([1])
+#    imgs, labs = xrayDataset.__getitem__([1,2])
 #    print(len(imgs))
 #    print(imgs)
 
@@ -92,8 +92,9 @@ def main():
     
     
 ## def trainNetwork(device, dataset, config, model, criterion, optimizer):
-    NM.trainNetwork(device, xrayDataset, trainSets, valSets, config, model, criterion, optimizer, batchsize)
+    trainedModel = NM.trainNetwork(device, xrayDataset, trainSets, valSets, config, model, criterion, optimizer, batchsize)
     
+    NM.save_model(trainedModel)
     
 
 

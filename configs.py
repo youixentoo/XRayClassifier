@@ -17,7 +17,7 @@ class config():
         # Number of epochs
         self._epochs = 1
         # Batch size
-        self._batches = 4
+        self._batches = 10
         # Model name
         self._modelName = "XRAY_1"
    
