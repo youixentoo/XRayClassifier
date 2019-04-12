@@ -20,7 +20,7 @@ Config options are found in the configs.py script.
 
 # Data:
 
-It /should/ work with the folder containing all images as the images source, but I had no way to test this. 
-If it doesn't work, download the used dataset from here: 
-https://drive.google.com/file/d/1qqb9sBdm_cx1KBhjbLT1ZZcojXYLnsHz/view?usp=sharing 
+It *should* work with the folder containing all images as the images source, but I had no way to test this. 
+If it doesn't work, download the used dataset from here:
+https://drive.google.com/file/d/1qqb9sBdm_cx1KBhjbLT1ZZcojXYLnsHz/view?usp=sharing
 If the link has expired or doesn't work, please contact me.
