@@ -62,13 +62,17 @@ def main():
     
     #print(xrayDataset.xrayClassFrame)
     
-    device = DU.getDevice()
+    device = DU.getDevice(True)
 
     # Gets the ranges of training and test data
     training, testing = DU.splitTrainTest(xrayDataset, config)
     
     # Initialize the model
     model = models.alexnet(pretrained=False, num_classes=4)
+    model.to(device)
+    if device == 'cuda':
+        model = torch.nn.DataParallel(model)
+        cudnn.benchmark = True
     
     #print(model)
     
