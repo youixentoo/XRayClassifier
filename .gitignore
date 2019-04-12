@@ -16,6 +16,12 @@ version 1 data/
 # Created by https://www.gitignore.io/api/images
 # Edit at https://www.gitignore.io/?templates=images
 
+# Exclude some scripts
+
+
+# Exclude the model
+*.pth
+
 ### Images ###
 # JPEG
 *.jpg

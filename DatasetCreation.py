@@ -3,6 +3,8 @@
 Created on Wed Mar 13 12:24:31 2019
 
 @author: gebruiker
+
+Creates the dataset object
 """
 
 import os
@@ -43,6 +45,10 @@ class XRayDataset(Dataset):
             imgName = os.path.join(self.imagesPath, self.xrayClassFrame.iloc[index, 0])
             
             image = np.array(Image.open(imgName).resize((224, 224)).convert("RGB"))
+            #print(image)
+            # Make the numbers a bit smaller
+            image = np.divide(image, 10)
+            #print(image)
             
             # swap color axis because
             # numpy image: H x W x C

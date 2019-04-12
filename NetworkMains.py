@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Moet nog kopieren van sigma, dit werkt waarschijnlijk nog voor geen meter
+Network functions
 """
 import pandas as pd
 import torch
@@ -43,7 +43,7 @@ from skimage import io, transform
 
 # Getting the model and other needed stuff
 def modelInit(device):
-    model = models.alexnet(pretrained=False)
+    model = models.alexnet(pretrained=False, num_classes=4)
 
     criterion = nn.CrossEntropyLoss() #nn.NLLLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.003)
@@ -97,10 +97,11 @@ def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, 
 
             # Create the dataset batches
             dataSet = list(BatchSampler(SequentialSampler(dataSets[phase]), batch_size=batchsize, drop_last=False))
+            dSSize = len(dataSet)
 
             # Iterate over data.
             for i, datasetIndexes in enumerate(dataSet):
-                print("From phase: "+phase+", doing indexes: "+str(datasetIndexes), end="\r")
+                print("{:.4f}% Done".format((i/dSSize)*100))
                 images, labels = dataset.__getitem__(datasetIndexes)
                 
                 images = images.to(device)
@@ -158,22 +159,28 @@ def trainNetwork(device, dataset, trainSets, valSets, config, model, criterion, 
 
 # Testing of the model using test data
 # Returns a list of the wrongly guessed labels
-def testing(testData, model, device):
+def testing(dataset, testingIndexes, model, device, labelDictClassify):
     
     # Variables needed in the function
     correct = 0
     total = 0
     wrongLabels = []
+    labelsForCM = []
+    predsForCM = []
     
     # Runs the model without gradient calculations as that is not needed for testing.
     # It also saves on memory.
     with torch.no_grad():
         # Looping over the data stored in testData to be tested on the model.
-        for dataTensor, labels in testData:
-            # Predicting the label (labels) based on the sequence (dataTensor),
-            dataTensor, labels = dataTensor.to(device), labels.to(device)
-            labels.float()
-            output = model(dataTensor.float())
+        for index in testingIndexes:
+            # Predicting the label based on the image
+            image, label = dataset.__getitem__([index])
+            image, label = image.to(device), label.to(device)
+            label.float()
+            output = model(image.float())
+            
+            #print(output)
+            
             
             # Predict probability and prediction
             #predictionProb = (sum(output.detach().numpy()) / len(output.detach().numpy()))
@@ -181,18 +188,24 @@ def testing(testData, model, device):
 #            predictionProb = (output.cpu()).detach().numpy().max()
 #            predicted = np.where(predictionProb>0.5,1,0)
 #            predictedTens = torch.from_numpy(predicted).long().to(device)
-            _, predicted = torch.max(output, 0)
+            _, predicted = torch.max(output,1)
+            
+            #print(predicted)
+            #break
             
            # print(prediction_prob)
 
-            labels = labels.long()
+            label = label.long()
             
             # Counts the number of correct guesses
-            correct += (predicted == labels).sum().item()
+            correct += (predicted == label).sum().item()
 
             
-            if not predicted == labels:
-                wrongLabels.append([labels,predicted])
+            if not predicted == label:
+                wrongLabels.append([label.item(),predicted.item()])
+                
+            labelsForCM.append(labelDictClassify.get(label.item()))
+            predsForCM.append(labelDictClassify.get(predicted.item()))
                 
             total += 1 
             
@@ -201,7 +214,8 @@ def testing(testData, model, device):
     
     print('Accuracy of the network on the test data: %1.4f %%' % (
         100 * correct / total))
-    return wrongLabels
+    
+    return wrongLabels, labelsForCM, predsForCM
 
 
 

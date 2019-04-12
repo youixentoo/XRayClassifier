@@ -3,6 +3,8 @@
 Created on Mon Mar 11 15:53:07 2019
 
 @author: gebruiker
+
+Other functions
 """
 import pandas as pd
 import torch

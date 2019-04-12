@@ -2,8 +2,11 @@
 """
 Created on Sat Mar 30 12:33:28 2019
 
-@author: gebruiker
+@author: thijs
+
+Configs
 """
+import os
 
 class config():
     
@@ -15,11 +18,13 @@ class config():
         # How much of the training data is validation (%)
         self._validationSplit = 5
         # Number of epochs
-        self._epochs = 1
+        self._epochs = 2
         # Batch size
-        self._batches = 10
+        self._batches = 50
         # Model name
         self._modelName = "XRAY_1"
+        # Path where the images are stored (/ = os.sep)
+        self._imagePath = os.path.dirname(os.path.realpath(__file__))+os.sep+"version 1 data"+os.sep+"Images"
    
     
     def getTrainsplit(self):
@@ -34,8 +39,8 @@ class config():
     def getBatchSize(self):
         return self._batches
  
-    def getModelName(self, useBestModel=True):
-        if useBestModel:
-            return self._modelName
-        else:
-            return self._modelName + "_other"
+    def getModelName(self):
+        return self._modelName
+        
+    def getImagePath(self):
+        return self._imagePath

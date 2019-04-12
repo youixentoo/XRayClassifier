@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 11 15:53:07 2019
+Created on Fri Apr 12 12:51:07 2019
 
 @author: gebruiker
 
-Data is created in the csv_test.py script
-
-Script used to train the network
-
+Tests the network
 """
+
 import pandas as pd
 import torch
 import torchvision
@@ -24,6 +22,7 @@ from torchvision import transforms, utils, datasets, models
 from skimage import io, transform
 
 from sklearn.model_selection import KFold, RepeatedKFold
+from sklearn.metrics import confusion_matrix
 
 import time
 import os
@@ -33,6 +32,7 @@ import DatasetCreation as DC
 import NetworkMains as NM
 import configs
 
+import CMPlot
 
 def main():
     # Configs
@@ -40,6 +40,7 @@ def main():
 
     # Reading the selected data
     DataCSVFrame = pd.read_csv("DataFrame.csv", usecols=["Image_Index","Finding_Labels"], index_col=False)
+    
     labelsSet = set(DataCSVFrame["Finding_Labels"].values)
 #    labelsFreq = np.unique(list(DataCSVFrame["Finding_Labels"].values), return_counts=True)
 #    print(labelsFreq)
@@ -58,68 +59,37 @@ def main():
     imgPath = config.getImagePath()
     # Creating the dataset
     xrayDataset = DC.XRayDataset(DataCSVFrame, imgPath, labelsDict)
-
-
-#    # Getting the first image from the dataset
-#    imgs, labs = xrayDataset.__getitem__([8307])
-#    print(len(imgs))
-#    print(imgs)
-
-
-
+    
+    #print(xrayDataset.xrayClassFrame)
+    
     device = DU.getDevice()
 
     # Gets the ranges of training and test data
     training, testing = DU.splitTrainTest(xrayDataset, config)
-
-    trainSets, valSets = DU.trainValSets(training, config)
-
-    criterion, optimizer, model = NM.modelInit(device)
     
-    batchsize = config.getBatchSize()
+    # Initialize the model
+    model = models.alexnet(pretrained=False, num_classes=4)
+    
+    #print(model)
+    
+    # Load the trained model
+    cwd = os.path.dirname(os.path.realpath(__file__))
+    model.load_state_dict(torch.load("%s%s%s.pth" % (cwd, os.sep, config.getModelName())))
+    model.eval()
+    
+    # Testing the model
+    wrongLabels, labelsCM, predsCM = NM.testing(xrayDataset, testing, model, device, labelDictClassify)
+    
+    # Confusion Matrix
+    CMPlot.plot_confusion_matrix(labelsCM, predsCM, list(labelsSet), normalize=False, title="Confusion Matrix")
+    
+    plt.show()
+    
+    print(labelsDict)
     
     
-## def trainNetwork(device, dataset, config, model, criterion, optimizer):
-    trainedModel = NM.trainNetwork(device, xrayDataset, trainSets, valSets, config, model, criterion, optimizer, batchsize)
     
-    NM.save_model(trainedModel, config.getModelName())
     
-
-
-def validationTrest():
-    config = configs.config()
-    testRgane = [*range(200)]
-
-    trainSets, valSets = DU.trainValSets(testRgane, config)
-
-    epochs = 21
-
-    index = 0
-    for epoc in range(epochs):
-        print(trainSets[index])
-        print(valSets[index])
-        if index % 20 == 19:
-            index = 0
-        else:
-            index += 1
-
-
-
-def modelTests():
-    device = DU.getDevice()
-    criterion, optimizer, model = NM.modelInit(device)
-
-
-
-
-
-
-
-
-
-
-
+    
 if __name__ == "__main__":
-#    validationTrest()
     main()
-#    modelTests()
